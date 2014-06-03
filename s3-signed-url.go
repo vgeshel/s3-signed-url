@@ -14,6 +14,7 @@ func main() {
 	key := flag.String("key", "", "key")
 	region := flag.String("region", aws.USEast.Name, "region")
 	expiration := flag.String("expiration", "1h", "expiration in the Go duration format.  A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\", \"-1.5h\" or \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\".")
+	verbose := flag.Bool("v", false, "verbose")
 
 	flag.Parse()
 
@@ -29,7 +30,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Fprintf(os.Stderr, "auth: %#v\n", auth)
+	if *verbose {
+		fmt.Fprintf(os.Stderr, "auth: %#v\n", auth)
+	}
 
 	reg, found := aws.Regions[*region]
 
