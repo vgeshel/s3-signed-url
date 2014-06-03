@@ -8,6 +8,8 @@ import (
 	"time"
 	"os"
 	"io"
+	"net/http"
+	"crypto/tls"
 )
 
 func main() {
@@ -17,6 +19,7 @@ func main() {
 	expiration := flag.String("expiration", "1h", "expiration in the Go duration format.  A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\", \"-1.5h\" or \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\".")
 	verbose := flag.Bool("v", false, "verbose")
 	mode := flag.String("mode", "sign", "sign or cat")
+	insecure := flag.Bool("insecure", false, "turn on InsecureSkipVerify: http://golang.org/pkg/crypto/tls/#Config")
 
 	flag.Parse()
 
@@ -58,6 +61,13 @@ func main() {
 		fmt.Println(buck.SignedURL(*key, exp))
 
 	case "cat":
+		if *insecure {
+			tr := &http.Transport{
+				TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
+			}
+			http.DefaultClient.Transport = tr
+		}
+		
 		reader, err := buck.GetReader(*key)
 
 		if err != nil {
