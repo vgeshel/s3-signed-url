@@ -29,6 +29,8 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Fprintf(os.Stderr, "auth: %#v\n", auth)
+
 	reg, found := aws.Regions[*region]
 
 	if ! found {
