@@ -7,6 +7,7 @@ import (
 	"flag"
 	"time"
 	"os"
+	"io"
 )
 
 func main() {
@@ -15,6 +16,7 @@ func main() {
 	region := flag.String("region", aws.USEast.Name, "region")
 	expiration := flag.String("expiration", "1h", "expiration in the Go duration format.  A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\", \"-1.5h\" or \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\".")
 	verbose := flag.Bool("v", false, "verbose")
+	mode := flag.String("mode", "sign", "sign or cat")
 
 	flag.Parse()
 
@@ -43,13 +45,28 @@ func main() {
 	s3c := s3.New(auth, reg)
 	buck := s3c.Bucket(*bucket)
 
-	dur, err := time.ParseDuration(*expiration)
+	switch *mode {
+	case "sign":
+		dur, err := time.ParseDuration(*expiration)
 
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
+		
+		exp := time.Now().Add(dur)
+
+		fmt.Println(buck.SignedURL(*key, exp))
+
+	case "cat":
+		reader, err := buck.GetReader(*key)
+
+		if err != nil {
+			panic(err)
+		}
+
+		io.Copy(os.Stdout, reader)
+		
+	default:
+		panic(fmt.Sprintf("invalid mode: %s", *mode))
 	}
-	
-	exp := time.Now().Add(dur)
-
-	fmt.Println(buck.SignedURL(*key, exp))
 }
