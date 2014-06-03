@@ -21,3 +21,5 @@ _testmain.go
 
 *.exe
 *.test
+/s3-signed-url
+*~
