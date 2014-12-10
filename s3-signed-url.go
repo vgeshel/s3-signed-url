@@ -79,7 +79,7 @@ func main() {
 		io.Copy(os.Stdout, reader)
 
 		if *timing {
-			fmt.Printf("done %s/%s in %v\n", *bucket, *key, time.Now().Sub(before))
+			fmt.Fprintf(os.Stderr, "done %s/%s in %v\n", *bucket, *key, time.Now().Sub(before))
 		}
 
 	default:
