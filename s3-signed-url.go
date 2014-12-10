@@ -18,6 +18,7 @@ func main() {
 	region := flag.String("region", aws.USEast.Name, "region")
 	expiration := flag.String("expiration", "1h", "expiration in the Go duration format.  A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\", \"-1.5h\" or \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\".")
 	verbose := flag.Bool("v", false, "verbose")
+	timing := flag.Bool("t", false, "show timing")
 	mode := flag.String("mode", "sign", "sign or cat")
 	insecure := flag.Bool("insecure", false, "turn on InsecureSkipVerify: http://golang.org/pkg/crypto/tls/#Config")
 
@@ -55,7 +56,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		
+
 		exp := time.Now().Add(dur)
 
 		fmt.Println(buck.SignedURL(*key, exp))
@@ -67,15 +68,20 @@ func main() {
 			}
 			http.DefaultClient.Transport = tr
 		}
-		
+
 		reader, err := buck.GetReader(*key)
 
 		if err != nil {
 			panic(err)
 		}
 
+		before := time.Now()
 		io.Copy(os.Stdout, reader)
-		
+
+		if *timing {
+			fmt.Printf("done %s/%s in %v\n", *bucket, *key, time.Now().Sub(before))
+		}
+
 	default:
 		panic(fmt.Sprintf("invalid mode: %s", *mode))
 	}
